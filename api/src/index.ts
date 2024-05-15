@@ -1,14 +1,30 @@
 import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
+import { ErrorHandler, Hono } from 'hono'
 import { logger } from 'hono/logger'
 import { bodyLimit } from 'hono/body-limit'
 
 import { BasicResponseData } from '@utils/types'
 import transform from "@routes/transform"
+import { HTTPException } from 'hono/http-exception'
 
 const app = new Hono().basePath('/api')
 
 app.use(logger())
+
+app.onError((err, c) => {
+  if (err instanceof Error) {
+    const response: BasicResponseData = {
+      code: 500,
+      message: err.message
+    }
+    return c.json(response, response.code)
+  }
+  const response: BasicResponseData = {
+    code: 500,
+    message: "server error"
+  }
+  return c.json(response, response.code)
+})
 
 app.get('/', (c) => {
   const response: BasicResponseData = {
