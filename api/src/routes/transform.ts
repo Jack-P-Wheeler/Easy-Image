@@ -1,7 +1,6 @@
 import { BasicResponseData } from "@utils/types";
 import { Hono } from "hono";
-import { HTTPException } from "hono/http-exception";
-import sharp from "sharp";
+import sharp, { ResizeOptions } from "sharp";
 
 const app = new Hono
 
@@ -31,7 +30,8 @@ app.post('/original', async (c) => {
 
 })
 
-app.post('/resize', async (c) => {
+// Handles sacling an image based off an image "file" and a scale value "scale" between 1 and 0 exclusive.
+app.post('/scale', async (c) => {
     const body = await c.req.parseBody()
 
     if (body.file instanceof Blob) {
@@ -46,8 +46,12 @@ app.post('/resize', async (c) => {
 
         if (newWidth >= width || newWidth <= 0) throw new Error('unusable new width')
 
+        const resizeOptions: ResizeOptions = {
+            width: newWidth,
+        }
+
         const transformedImageBuffer = await sharpInstance
-            .resize(newWidth)
+            .resize(resizeOptions)
             .toBuffer()
 
         c.header('Content-Type', 'image/png')

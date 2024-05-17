@@ -1,13 +1,13 @@
 import { serve } from '@hono/node-server'
-import { ErrorHandler, Hono } from 'hono'
+import { Hono } from 'hono'
 import { logger } from 'hono/logger'
 import { bodyLimit } from 'hono/body-limit'
 
 import { BasicResponseData } from '@utils/types'
 import transform from "@routes/transform"
-import { HTTPException } from 'hono/http-exception'
+import { serveStatic } from '@hono/node-server/serve-static'
 
-const app = new Hono().basePath('/api')
+const app = new Hono()
 
 app.use(logger())
 
@@ -26,7 +26,7 @@ app.onError((err, c) => {
   return c.json(response, response.code)
 })
 
-app.get('/', (c) => {
+app.get('/api', (c) => {
   const response: BasicResponseData = {
     code: 200,
     message: "api is working"
@@ -35,7 +35,7 @@ app.get('/', (c) => {
 })
 
 // External routes here
-app.use('/transform/*', bodyLimit({
+app.use('/api/transform/*', bodyLimit({
   maxSize: 1024 * 1024 * 10,
   onError(c) {
     const response: BasicResponseData = {
@@ -45,7 +45,11 @@ app.use('/transform/*', bodyLimit({
     return c.json(response, response.code)
   },
 }))
-app.route("/transform", transform)
+app.route("/api/transform", transform)
+
+app.use('/*', serveStatic({
+  root: 'frontend'
+}));
 
 app.all('*', (c) => {
   const response: BasicResponseData = {
@@ -55,7 +59,7 @@ app.all('*', (c) => {
   return c.json(response, response.code)
 })
 
-const port = 3000
+const port = 4000
 console.log(`Server is running on port ${port}`)
 
 serve({
