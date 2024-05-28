@@ -6,10 +6,12 @@ import { bodyLimit } from 'hono/body-limit'
 import { BasicResponseData } from '@utils/types'
 import transform from "@routes/transform"
 import { serveStatic } from '@hono/node-server/serve-static'
+import { cors } from 'hono/cors'
 
 const app = new Hono()
 
 app.use(logger())
+app.use('/api/*', cors())
 
 app.onError((err, c) => {
   if (err instanceof Error) {
@@ -35,7 +37,7 @@ app.get('/api', (c) => {
 })
 
 // External routes here
-app.use('/api/transform/*', bodyLimit({
+app.use('/api/*', bodyLimit({
   maxSize: 1024 * 1024 * 10,
   onError(c) {
     const response: BasicResponseData = {
@@ -45,6 +47,7 @@ app.use('/api/transform/*', bodyLimit({
     return c.json(response, response.code)
   },
 }))
+
 app.route("/api/transform", transform)
 
 app.use('/*', serveStatic({

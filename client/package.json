@@ -1,6 +1,6 @@
 {
   "name": "vite-template-solid",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "",
   "type": "module",
   "scripts": {
@@ -23,6 +23,7 @@
   "dependencies": {
     "@solid-primitives/storage": "^3.5.0",
     "@solidjs/meta": "^0.29.4",
+    "sharp": "^0.33.4",
     "solid-js": "^1.8.11",
     "theme-change": "^2.5.0",
     "vite-tsconfig-paths": "^4.3.2"

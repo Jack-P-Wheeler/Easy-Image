@@ -8,7 +8,14 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      maxWidth: {
+        'page': '1440px'
+      },
+      gridTemplateColumns: {
+        'editor': '1fr 3fr 1fr'
+      },
+    },
   },
   plugins: [
     daisyui

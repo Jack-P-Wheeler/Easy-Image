@@ -15,6 +15,12 @@
     "paths": {
       "@components/*": [
         "src/components/*"
+      ],
+      "@helpers/*": [
+        "src/helpers/*"
+      ],
+      "@types": [
+        "../api/src/utils/types.ts"
       ]
     }
   },
