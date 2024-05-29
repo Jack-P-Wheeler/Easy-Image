@@ -80,7 +80,7 @@ const ImageEditor: Component = () => {
     };
 
     return (
-        <div class="grid grid-cols-editor gap-10 mt-10">
+        <div class="grid grid-cols-1 lg:grid-cols-editor gap-10 mt-10">
             <Panel>
                 <div class="space-y-4">
                     <div>

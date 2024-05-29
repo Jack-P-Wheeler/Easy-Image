@@ -7,6 +7,11 @@ import { BasicResponseData } from '@utils/types'
 import transform from "@routes/transform"
 import { serveStatic } from '@hono/node-server/serve-static'
 import { cors } from 'hono/cors'
+import path from 'node:path'
+import fs from 'node:fs/promises'
+import { getMimeType } from 'hono/utils/mime'
+
+
 
 const app = new Hono()
 
@@ -38,21 +43,35 @@ app.get('/api', (c) => {
 
 // External routes here
 app.use('/api/*', bodyLimit({
-  maxSize: 1024 * 1024 * 10,
+  maxSize: 1024 * 1024 * 70,
   onError(c) {
     const response: BasicResponseData = {
       code: 413,
       message: "image is too large"
     }
+    
     return c.json(response, response.code)
   },
 }))
 
 app.route("/api/transform", transform)
 
-app.use('/*', serveStatic({
-  root: 'frontend'
-}));
+app.use('/*', async (c, next) => {
+    const absPath = path.join(import.meta.dirname, '/frontend', c.req.path == '/' ? 'index.html' : c.req.path)
+    try {
+        const handle = await fs.open(absPath)
+        const content = await handle.readFile()
+        await handle.close()
+
+        const mimeGuess = getMimeType(absPath)
+        console.log(mimeGuess)
+        c.header("Content-Type", mimeGuess);
+        return c.body(content)
+    } catch (error) {
+        console.log(error)
+    }
+    return await next()
+})
 
 app.all('*', (c) => {
   const response: BasicResponseData = {
@@ -62,7 +81,7 @@ app.all('*', (c) => {
   return c.json(response, response.code)
 })
 
-const port = 4000
+const port = 4001
 console.log(`Server is running on port ${port}`)
 
 serve({

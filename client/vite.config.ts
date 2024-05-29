@@ -15,7 +15,7 @@ export default defineConfig({
     },
     build: {
         target: 'esnext',
-        outDir: '../api/frontend',
+        outDir: '../api/dist/frontend',
         emptyOutDir: true,
     },
 });
