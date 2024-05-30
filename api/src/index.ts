@@ -5,7 +5,6 @@ import { bodyLimit } from 'hono/body-limit'
 
 import { BasicResponseData } from '@utils/types'
 import transform from "@routes/transform"
-import { serveStatic } from '@hono/node-server/serve-static'
 import { cors } from 'hono/cors'
 import path from 'node:path'
 import fs from 'node:fs/promises'
@@ -81,7 +80,7 @@ app.all('*', (c) => {
   return c.json(response, response.code)
 })
 
-const port = 4001
+const port = Number(process.env.API_URL) || 4000
 console.log(`Server is running on port ${port}`)
 
 serve({

@@ -1,19 +1,22 @@
 import { Accessor, For, Show, createEffect, createMemo, createSignal, type Component } from "solid-js";
 import { createStore } from "solid-js/store";
 import { BasicResponseData } from "@types";
-import { ImageOperations, memoGuard } from "@helpers/type-helpers";
+import { ImageOperations, MaybeResolved, memoGuard } from "@helpers/type-helpers";
 import Panel from "./Panel";
 import { Metadata } from "sharp";
 import ImageMetaData from "./ImageMetaData";
 
-const ImageEditor: Component = () => {
-    interface FieldStore {
-        scale: string;
-    }
+import Scale from "@components/editorComponents/Scale";
+import TransformButton from "./editorComponents/TransformButton";
 
+export interface FieldStore {
+    scale?: string;
+}
+
+const ImageEditor: Component = () => {
     const [imageUrl, setImageUrl] = createSignal<string | BasicResponseData>("");
     const [imageMeta, setImageMeta] = createSignal<(BasicResponseData & { data: Metadata }) | null>(null);
-    const [fields, setFields] = createStore<FieldStore>({ scale: "0.5" });
+    const [fields, setFields] = createStore<FieldStore>();
 
     const guardMemo = memoGuard(imageUrl, (val) => typeof val == "string" && val != "" && val);
 
@@ -38,7 +41,7 @@ const ImageEditor: Component = () => {
         }
     };
 
-    const submitScaleImage = async (params: ImageOperations) => {
+    const imageTransform = async (params: ImageOperations) => {
         const imageUrlValue = imageUrl();
 
         if (typeof imageUrlValue !== "string" || imageUrlValue == "") {
@@ -52,14 +55,13 @@ const ImageEditor: Component = () => {
 
         switch (params.opperation) {
             case "scale":
+                if (!fields.scale) return false;
                 formData.append("scale", fields.scale);
                 break;
             case "rotate":
                 formData.append("angle", String(params.angle));
                 break;
-
             default:
-                return false;
                 break;
         }
 
@@ -80,53 +82,48 @@ const ImageEditor: Component = () => {
     };
 
     return (
-        <div class="grid grid-cols-1 lg:grid-cols-editor gap-10 mt-10">
+        <div class="grid grid-cols-1 lg:grid-cols-editor gap-10 mt-10 min-h-[800px]">
             <Panel>
                 <div class="space-y-4">
                     <div>
                         <label for="file" class="font-bold mb-2 block">
                             File to transform
                         </label>
-                        <input required type="file" id="file" name="file" class="file-input file-input-bordered" onClick={(e) => e.currentTarget.value = ""} onChange={(e) => handleFileInput(e)} />
-                    </div>
-                    <div>
-                        <label for="scale" class="font-bold block mb-2">
-                            Scale
-                        </label>
                         <input
                             required
-                            value={fields.scale}
-                            onChange={(e) => setFields("scale", e.target.value)}
-                            id="scale"
-                            type="number"
-                            name="scale"
-                            class="input input-bordered"
-                            placeholder="0.5"
-                            step="0.01"
-                            min="0.1"
-                            max="0.9"
+                            type="file"
+                            id="file"
+                            name="file"
+                            class="file-input file-input-bordered"
+                            onClick={(e) => (e.currentTarget.value = "")}
+                            onChange={(e) => handleFileInput(e)}
                         />
                     </div>
+
+                    <Scale fields={fields} setFields={setFields} imageTransform={imageTransform} />
                 </div>
 
                 <div class="join">
-                <button class="join-item btn btn-primary mt-10" onClick={() => submitScaleImage({ opperation: "scale" })}>
-                    Scale
-                </button>
+                    <TransformButton imageTransform={imageTransform} operation={{ opperation: "rotate", angle: -90 }}>
+                        -90°
+                    </TransformButton>
 
-                <button class="join-item btn btn-primary mt-10" onClick={() => submitScaleImage({ opperation: "rotate", angle: 90 })}>
-                    90°
-                </button>
+                    <TransformButton imageTransform={imageTransform} operation={{ opperation: "rotate", angle: 90 }}>
+                        90°
+                    </TransformButton>
 
-                <button class="join-item btn btn-primary mt-10" onClick={() => submitScaleImage({ opperation: "rotate", angle: -90 })}>
-                    -90°
-                </button>
+                    <TransformButton imageTransform={imageTransform} operation={{ opperation: "flip"}}>
+                        Flip
+                    </TransformButton>
+
+                    <TransformButton imageTransform={imageTransform} operation={{ opperation: "flop"}}>
+                        Flop
+                    </TransformButton>
                 </div>
-                
             </Panel>
 
             <Panel>
-                <div class="">
+                <div class="flex items-center h-full">
                     <Show when={guardMemo()} keyed>
                         {(image) => {
                             return (

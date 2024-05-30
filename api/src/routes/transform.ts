@@ -74,6 +74,7 @@ app.post('/scale', async (c) => {
 
         const resizeOptions: ResizeOptions = {
             width: newWidth,
+            kernel: "nearest"
         }
 
         const transformedImageBuffer = await sharpInstance
@@ -104,6 +105,50 @@ app.post('/rotate', async (c) => {
 
         const transformedImageBuffer = await sharpInstance
             .rotate(Number(body.angle))
+            .toBuffer()
+
+        c.header('Content-Type', 'image/png')
+        return c.body(transformedImageBuffer)
+    }
+
+    const response: BasicResponseData = {
+        code: 400,
+        message: "incorrect input"
+    }
+    return c.json(response, response.code)
+})
+
+app.post('/flip', async (c) => {
+    const body = await c.req.parseBody()
+
+    if (body.file instanceof Blob) {
+        const imageBuffer = await body.file.arrayBuffer()
+        const sharpInstance = sharp(imageBuffer)
+
+        const transformedImageBuffer = await sharpInstance
+            .flip()
+            .toBuffer()
+
+        c.header('Content-Type', 'image/png')
+        return c.body(transformedImageBuffer)
+    }
+
+    const response: BasicResponseData = {
+        code: 400,
+        message: "incorrect input"
+    }
+    return c.json(response, response.code)
+})
+
+app.post('/flop', async (c) => {
+    const body = await c.req.parseBody()
+
+    if (body.file instanceof Blob) {
+        const imageBuffer = await body.file.arrayBuffer()
+        const sharpInstance = sharp(imageBuffer)
+
+        const transformedImageBuffer = await sharpInstance
+            .flop()
             .toBuffer()
 
         c.header('Content-Type', 'image/png')
