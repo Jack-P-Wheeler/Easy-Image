@@ -80,7 +80,7 @@ app.all('*', (c) => {
   return c.json(response, response.code)
 })
 
-const port = Number(process.env.API_URL) || 4000
+const port = Number(process.env.API_PORT) || 4000
 console.log(`Server is running on port ${port}`)
 
 serve({
