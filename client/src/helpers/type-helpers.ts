@@ -1,6 +1,7 @@
 import { FieldStore } from "@components/ImageEditor";
 import { Accessor, Component, JSX, createMemo } from "solid-js";
 import { SetStoreFunction } from "solid-js/store";
+import { ImageOperations } from "@types";
 
 export const guarded = <T, U extends T>(data: T, predicate: (input: NonNullable<T>) => U | false) => {
     const guard = (value: T): value is U => value && predicate(value) !== false;
@@ -11,19 +12,6 @@ export const guarded = <T, U extends T>(data: T, predicate: (input: NonNullable<
 export const memoGuard = <T, U extends T>(val: Accessor<T>, fn: (input: NonNullable<T>) => U | false) => {
     return createMemo(() => guarded(val(), fn))
 }
-
-export type ImageOperations = (
-    {
-        opperation: 'scale',
-    } | {
-        opperation: 'rotate'
-        angle?: number
-    } | {
-        opperation: 'flip'
-    } | {
-        opperation: 'flop'
-    }
-)
 
 declare module "solid-js" {
     namespace JSX {

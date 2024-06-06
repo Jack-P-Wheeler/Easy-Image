@@ -1,4 +1,4 @@
-import { Component, JSX, JSXElement, ParentComponent } from "solid-js"
+import { ParentComponent } from "solid-js"
 
 const Panel:ParentComponent<{centered?: boolean}> = (props) => {    
     return (

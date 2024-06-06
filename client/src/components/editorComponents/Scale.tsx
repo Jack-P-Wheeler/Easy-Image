@@ -10,7 +10,7 @@ const Scale: EditorComponent = ({ fields, setFields, imageTransform }) => {
                 </label>
                 <input
                     required
-                    onChange={(e) => setFields("scale", e.target.value)}
+                    onInput={(e) => setFields("scale", e.target.value)}
                     id="scale"
                     type="number"
                     name="scale"

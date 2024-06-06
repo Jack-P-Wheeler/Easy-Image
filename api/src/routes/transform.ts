@@ -74,7 +74,7 @@ app.post('/scale', async (c) => {
 
         const resizeOptions: ResizeOptions = {
             width: newWidth,
-            kernel: "nearest"
+            kernel: "cubic"
         }
 
         const transformedImageBuffer = await sharpInstance
