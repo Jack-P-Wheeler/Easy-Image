@@ -3,7 +3,7 @@ import { editorField } from "src/hooks/editorField";
 
 const Scale: EditorComponent = ({ fields, setFields, imageTransform }) => {    
     return (
-        <>
+        <div>
             <div>
                 <label for="scale" class="font-bold block mb-2">
                     Scale
@@ -25,7 +25,7 @@ const Scale: EditorComponent = ({ fields, setFields, imageTransform }) => {
             <button use:editorField class="join-item btn btn-primary mt-10" disabled={fields.scale == undefined} onClick={() => imageTransform({ opperation: "scale" })}>
                 Scale
             </button>
-        </>
+        </div>
     );
 };
 

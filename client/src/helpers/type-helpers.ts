@@ -13,6 +13,10 @@ export const memoGuard = <T, U extends T>(val: Accessor<T>, fn: (input: NonNulla
     return createMemo(() => guarded(val(), fn))
 }
 
+export const narrowKeys = <T extends Object,>(obj: T): (keyof T)[] => {
+    return Object.keys(obj) as (keyof T)[]
+}
+
 declare module "solid-js" {
     namespace JSX {
         interface Directives {

@@ -20,12 +20,12 @@ app.post('/info', async (c) => {
         const sharpInstance = sharp(imageBuffer)
         const metadata = await sharpInstance.metadata()
 
-        const response: BasicResponseData & {data: Metadata} = {
+        const response: BasicResponseData & { data: Metadata } = {
             code: 200,
             message: "image metadata",
             data: metadata
         }
-        
+
         return c.json(response, response.code)
     }
 
@@ -54,6 +54,15 @@ app.post('/original', async (c) => {
     return c.json(response, response.code)
 
 
+})
+
+// RPC to cover actual image operations (currently just to test validation)
+app.post('/', async (c) => {
+    const response: BasicResponseData = {
+        code: 200,
+        message: "RPC call"
+    }
+    return c.json(response, response.code)
 })
 
 // Handles scaling an image based off an image "file" and a scale value "scale" between 1 and 0 exclusive.
