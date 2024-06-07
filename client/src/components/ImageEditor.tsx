@@ -1,4 +1,4 @@
-import { For, Show, createEffect, createSignal, type Component } from "solid-js";
+import { For, Show, Suspense, createEffect, createSignal, type Component } from "solid-js";
 import { createStore } from "solid-js/store";
 import { BasicResponseData } from "@types";
 import { memoGuard, narrowKeys } from "@helpers/type-helpers";
@@ -18,33 +18,41 @@ interface ErrorStore {
     connectionIssue?: string;
 }
 
+interface LoadingState {
+    imageOpperation: boolean;
+    imageMeta: boolean;
+}
+
 type ErrorKeys = keyof ErrorStore;
 
 const ImageEditor: Component = () => {
     const [imageUrl, setImageUrl] = createSignal<string | BasicResponseData>("");
     const [imageMeta, setImageMeta] = createSignal<(BasicResponseData & { data: Metadata }) | null>(null);
+
     const [fields, setFields] = createStore<FieldStore>();
 
     const [errors, setErrors] = createStore<ErrorStore>();
     const [displayErrors, setDisplayErrors] = createSignal<boolean>(false);
 
+    const [loading, setLoading] = createStore<LoadingState>({
+        imageOpperation: false,
+        imageMeta: false,
+    });
+
     createEffect(() => {
         let key: ErrorKeys;
         for (key in errors) {
             if (Object.prototype.hasOwnProperty.call(errors, key)) {
-                const element = errors[key];
                 setDisplayErrors(true);
             }
         }
     });
 
-    const guardMemo = memoGuard(imageUrl, (val) => typeof val == "string" && val != "" && val);
+    const guardedImage = memoGuard(imageUrl, (val) => typeof val == "string" && val != "" && val);
 
     const getBlobFromUrl = async (url: string) => {
         return await (await fetch(url)).blob();
     };
-
-    
 
     const handleFileInput = async (e: Event) => {
         try {
@@ -54,10 +62,12 @@ const ImageEditor: Component = () => {
 
                 const formData = new FormData();
                 formData.append("file", e.target.files[0]);
+                setLoading("imageMeta", true);
                 const metaPromise = await fetch(import.meta.env.VITE_API_URL + "/api/transform/info", {
                     method: "post",
                     body: formData,
                 });
+                setLoading("imageMeta", false);
 
                 const meta = await metaPromise.json();
                 setImageMeta(meta);
@@ -69,6 +79,7 @@ const ImageEditor: Component = () => {
 
     const imageTransform = async (params: ImageOperations) => {
         try {
+            setLoading('imageOpperation', true)
             const imageUrlValue = imageUrl();
 
             if (typeof imageUrlValue !== "string" || imageUrlValue == "") {
@@ -105,7 +116,9 @@ const ImageEditor: Component = () => {
             const fileBlob = await fetchData.blob();
             const newImage = URL.createObjectURL(fileBlob);
 
+            setLoading('imageOpperation', false)
             setImageUrl(newImage);
+            
         } catch (error) {
             setErrors("connectionIssue", "Issue performing transformation on the server.");
         }
@@ -154,26 +167,34 @@ const ImageEditor: Component = () => {
                 </Panel>
 
                 <Panel>
-                    <div class="flex items-center h-full">
-                        <Show when={guardMemo()} keyed>
+                    <div class="flex items-center justify-center h-full relative">
+                        
+                        <Show when={guardedImage()} keyed>
                             {(image) => {
                                 return (
                                     <>
-                                        <img src={image} class="object-fill w-full" alt="" />
+                                        <img src={image} class={`object-fill w-full ${loading.imageOpperation ? "opacity-50" : ""}`} alt="" />
                                     </>
                                 );
                             }}
+                        </Show>
+                        <Show when={loading.imageOpperation}>
+                            <span class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 loading loading-spinner loading-lg"></span>
                         </Show>
                     </div>
                 </Panel>
 
                 <Panel>
+                    <Show when={loading.imageMeta}>
+                        <span class="block loading loading-spinner loading-lg"></span>
+                    </Show>
+
                     <Show when={imageMeta()?.data} keyed>
                         {(data: Metadata) => {
                             return <ImageMetaData data={data} />;
                         }}
                     </Show>
-                    <Show when={guardMemo()} keyed>
+                    <Show when={guardedImage()} keyed>
                         {(image) => {
                             return (
                                 <>
@@ -191,13 +212,7 @@ const ImageEditor: Component = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <For each={narrowKeys(errors)}>
-                        {
-                            (item) => (
-                                <p>{errors[item]}</p>
-                            )
-                        }
-                    </For>
+                    <For each={narrowKeys(errors)}>{(item) => <p>{errors[item]}</p>}</For>
                 </div>
             </Show>
         </section>
