@@ -30,9 +30,3 @@ type EditorComponentProps = { fields: FieldStore; setFields: SetStoreFunction<Fi
 export type EditorComponent = Component<EditorComponentProps>
 
 export type ParentEditorComponent = Component<{imageTransform: (params: ImageOperations) => Promise<false | undefined>; operation: ImageOperations; children: JSX.Element}>
-
-// export type EditorContextValue = {
-//     guardedImage: Accessor<string | null>,
-//     imageUrl: Accessor<string | BasicResponseData>,
-
-// }

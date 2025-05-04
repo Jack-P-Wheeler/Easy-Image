@@ -1,22 +1,23 @@
-import { For, Show, Suspense, createEffect, createSignal, useContext, type Component } from "solid-js";
+import { For, Show, createEffect, createSignal, type Component } from "solid-js";
 import { createStore } from "solid-js/store";
 import { BasicResponseData } from "@types";
-import { memoGuard, narrowKeys } from "@helpers/type-helpers";
+import { narrowKeys } from "@helpers/type-helpers";
 import { ImageOperations } from "@types";
 import Panel from "./Panel";
 import { Metadata } from "sharp";
 import ImageMetaData from "./ImageMetaData";
-import {ImageEditorContextObject} from '../context/ImageEditorContext'
 
 import Scale from "@components/editorComponents/Scale";
 import TransformButton from "./editorComponents/TransformButton";
+import { useImageEditorContext } from "@helpers/context-helpers";
 
 export interface FieldStore {
     scale?: string;
 }
 
 interface ErrorStore {
-    connectionIssue?: string;
+    connectionIssue?: string | false;
+    transformIssue?: string | false;
 }
 
 interface LoadingState {
@@ -27,17 +28,16 @@ interface LoadingState {
 type ErrorKeys = keyof ErrorStore;
 
 const ImageEditor: Component = () => {
-    const context = useContext(ImageEditorContextObject)
-    
-    if (context == undefined) {
-        throw new Error('Context should be defined.')
-    }
+    const context = useImageEditorContext()
 
     const [imageMeta, setImageMeta] = createSignal<(BasicResponseData & { data: Metadata }) | null>(null);
 
     const [fields, setFields] = createStore<FieldStore>();
 
-    const [errors, setErrors] = createStore<ErrorStore>();
+    const [errors, setErrors] = createStore<ErrorStore>({
+        connectionIssue: false,
+        transformIssue: false
+    });
     const [displayErrors, setDisplayErrors] = createSignal<boolean>(false);
 
     const [loading, setLoading] = createStore<LoadingState>({
@@ -48,7 +48,7 @@ const ImageEditor: Component = () => {
     createEffect(() => {
         let key: ErrorKeys;
         for (key in errors) {
-            if (errors.hasOwnProperty(key)) {
+            if (errors[key]) {
                 setDisplayErrors(true);
             }
         }
@@ -88,7 +88,7 @@ const ImageEditor: Component = () => {
             if (typeof imageUrlValue !== "string" || imageUrlValue == "") {
                 return false;
             }
-            
+
             setLoading('imageOperation', true)
 
             const currentImage = await getBlobFromUrl(imageUrlValue);
@@ -114,7 +114,9 @@ const ImageEditor: Component = () => {
             });
 
             if (fetchData.headers.get("content-type")?.includes("application/json")) {
-                context.values.setImageUrl(await fetchData.json());
+                const response = await fetchData.json()
+                setLoading('imageOperation', false)
+                setErrors("transformIssue", `The server threw an error: "${response.message}". Please try another operation.`);
                 return false;
             }
 
@@ -122,8 +124,9 @@ const ImageEditor: Component = () => {
             const newImage = URL.createObjectURL(fileBlob);
 
             setLoading('imageOperation', false)
+            setErrors('transformIssue', undefined)
             context.values.setImageUrl(newImage);
-            
+
         } catch (error) {
             setErrors("connectionIssue", "Issue performing transformation on the server.");
         }
@@ -173,7 +176,7 @@ const ImageEditor: Component = () => {
 
                 <Panel classes="col-span-2">
                     <div class="flex items-center justify-center h-full relative">
-                        
+
                         <Show when={context.values.guardedImage()} keyed>
                             {(image) => {
                                 return (
@@ -213,12 +216,17 @@ const ImageEditor: Component = () => {
                 </Panel>
             </div>
             <Show when={displayErrors()}>
-                <div role="alert" class="alert alert-error mt-10">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <For each={narrowKeys(errors)}>{(item) => <p>{errors[item]}</p>}</For>
-                </div>
+                <For each={narrowKeys(errors)}>{(item) =>
+                    <Show when={errors[item]}>
+                        <div role="alert" class="alert alert-error mt-10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p>{errors[item]}</p>
+                        </div>
+                    </Show>
+                }</For>
+
             </Show>
         </section>
     );
