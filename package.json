@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    
+    "dev": "pnpm --parallel --color run dev",
+    "build": "pnpm run build:apps",
+    "build:apps": "pnpm -r --filter=./apps/** run build"
   },
   "keywords": [],
   "author": "",

@@ -85,5 +85,8 @@ console.log(`Server is running on port ${port}`)
 
 serve({
   fetch: app.fetch,
-  port
+  port,
+  hostname: '127.0.0.1',
+}, (info) => {
+  console.log(`Server is running on http://127.0.0.1:${info.port}`)
 })

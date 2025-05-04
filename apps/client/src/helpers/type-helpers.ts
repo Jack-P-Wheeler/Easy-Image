@@ -19,9 +19,7 @@ export const narrowKeys = <T extends Object,>(obj: T): (keyof T)[] => {
 
 declare module "solid-js" {
     namespace JSX {
-        interface Directives {
-            editorField: true
-        }
+
     }
 }
 
