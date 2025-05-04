@@ -1,7 +1,7 @@
 import { FieldStore } from "@components/ImageEditor";
 import { Accessor, Component, JSX, createMemo } from "solid-js";
 import { SetStoreFunction } from "solid-js/store";
-import { ImageOperations } from "@types";
+import { BasicResponseData, ImageOperations } from "@types";
 
 export const guarded = <T, U extends T>(data: T, predicate: (input: NonNullable<T>) => U | false) => {
     const guard = (value: T): value is U => value && predicate(value) !== false;
@@ -30,3 +30,9 @@ type EditorComponentProps = { fields: FieldStore; setFields: SetStoreFunction<Fi
 export type EditorComponent = Component<EditorComponentProps>
 
 export type ParentEditorComponent = Component<{imageTransform: (params: ImageOperations) => Promise<false | undefined>; operation: ImageOperations; children: JSX.Element}>
+
+// export type EditorContextValue = {
+//     guardedImage: Accessor<string | null>,
+//     imageUrl: Accessor<string | BasicResponseData>,
+
+// }

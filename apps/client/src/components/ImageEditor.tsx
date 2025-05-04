@@ -1,4 +1,4 @@
-import { For, Show, Suspense, createEffect, createSignal, type Component } from "solid-js";
+import { For, Show, Suspense, createEffect, createSignal, useContext, type Component } from "solid-js";
 import { createStore } from "solid-js/store";
 import { BasicResponseData } from "@types";
 import { memoGuard, narrowKeys } from "@helpers/type-helpers";
@@ -6,6 +6,7 @@ import { ImageOperations } from "@types";
 import Panel from "./Panel";
 import { Metadata } from "sharp";
 import ImageMetaData from "./ImageMetaData";
+import {ImageEditorContextObject} from '../context/ImageEditorContext'
 
 import Scale from "@components/editorComponents/Scale";
 import TransformButton from "./editorComponents/TransformButton";
@@ -19,14 +20,19 @@ interface ErrorStore {
 }
 
 interface LoadingState {
-    imageOpperation: boolean;
+    imageOperation: boolean;
     imageMeta: boolean;
 }
 
 type ErrorKeys = keyof ErrorStore;
 
 const ImageEditor: Component = () => {
-    const [imageUrl, setImageUrl] = createSignal<string | BasicResponseData>("");
+    const context = useContext(ImageEditorContextObject)
+    
+    if (context == undefined) {
+        throw new Error('Context should be defined.')
+    }
+
     const [imageMeta, setImageMeta] = createSignal<(BasicResponseData & { data: Metadata }) | null>(null);
 
     const [fields, setFields] = createStore<FieldStore>();
@@ -35,20 +41,18 @@ const ImageEditor: Component = () => {
     const [displayErrors, setDisplayErrors] = createSignal<boolean>(false);
 
     const [loading, setLoading] = createStore<LoadingState>({
-        imageOpperation: false,
+        imageOperation: false,
         imageMeta: false,
     });
 
     createEffect(() => {
         let key: ErrorKeys;
         for (key in errors) {
-            if (Object.prototype.hasOwnProperty.call(errors, key)) {
+            if (errors.hasOwnProperty(key)) {
                 setDisplayErrors(true);
             }
         }
     });
-
-    const guardedImage = memoGuard(imageUrl, (val) => typeof val == "string" && val != "" && val);
 
     const getBlobFromUrl = async (url: string) => {
         return await (await fetch(url)).blob();
@@ -58,7 +62,7 @@ const ImageEditor: Component = () => {
         try {
             if (e.target instanceof HTMLInputElement && e.target.files != null) {
                 const newImage = URL.createObjectURL(e.target.files[0]);
-                setImageUrl(newImage);
+                context.values.setImageUrl(newImage);
 
                 const formData = new FormData();
                 formData.append("file", e.target.files[0]);
@@ -79,12 +83,13 @@ const ImageEditor: Component = () => {
 
     const imageTransform = async (params: ImageOperations) => {
         try {
-            setLoading('imageOpperation', true)
-            const imageUrlValue = imageUrl();
+            const imageUrlValue = context.values.imageUrl();
 
             if (typeof imageUrlValue !== "string" || imageUrlValue == "") {
                 return false;
             }
+            
+            setLoading('imageOperation', true)
 
             const currentImage = await getBlobFromUrl(imageUrlValue);
             const formData = new FormData();
@@ -109,15 +114,15 @@ const ImageEditor: Component = () => {
             });
 
             if (fetchData.headers.get("content-type")?.includes("application/json")) {
-                setImageUrl(await fetchData.json());
+                context.values.setImageUrl(await fetchData.json());
                 return false;
             }
 
             const fileBlob = await fetchData.blob();
             const newImage = URL.createObjectURL(fileBlob);
 
-            setLoading('imageOpperation', false)
-            setImageUrl(newImage);
+            setLoading('imageOperation', false)
+            context.values.setImageUrl(newImage);
             
         } catch (error) {
             setErrors("connectionIssue", "Issue performing transformation on the server.");
@@ -126,7 +131,7 @@ const ImageEditor: Component = () => {
 
     return (
         <section>
-            <div class="grid grid-cols-1 lg:grid-cols-editor gap-10 mt-10 min-h-[800px]">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-10 min-h-[800px]">
                 <Panel>
                     <div class="space-y-4">
                         <div>
@@ -166,25 +171,25 @@ const ImageEditor: Component = () => {
                     </div>
                 </Panel>
 
-                <Panel>
+                <Panel classes="col-span-2">
                     <div class="flex items-center justify-center h-full relative">
                         
-                        <Show when={guardedImage()} keyed>
+                        <Show when={context.values.guardedImage()} keyed>
                             {(image) => {
                                 return (
                                     <>
-                                        <img src={image} class={`object-fill w-full ${loading.imageOpperation ? "opacity-50" : ""}`} alt="" />
+                                        <img src={image} class={`object-fill disable-blur w-full contrast-100 ${loading.imageOperation ? "opacity-50" : ""}`} alt="" />
                                     </>
                                 );
                             }}
                         </Show>
-                        <Show when={loading.imageOpperation}>
+                        <Show when={loading.imageOperation}>
                             <span class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 loading loading-spinner loading-lg"></span>
                         </Show>
                     </div>
                 </Panel>
 
-                <Panel>
+                <Panel classes="col-span-1">
                     <Show when={loading.imageMeta}>
                         <span class="block loading loading-spinner loading-lg"></span>
                     </Show>
@@ -194,7 +199,7 @@ const ImageEditor: Component = () => {
                             return <ImageMetaData data={data} />;
                         }}
                     </Show>
-                    <Show when={guardedImage()} keyed>
+                    <Show when={context.values.guardedImage()} keyed>
                         {(image) => {
                             return (
                                 <>

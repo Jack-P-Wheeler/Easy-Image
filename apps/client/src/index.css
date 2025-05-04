@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .disable-blur {
+        image-rendering: pixelated;
+    }
+}
