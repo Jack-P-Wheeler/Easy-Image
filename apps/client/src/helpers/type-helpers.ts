@@ -32,7 +32,7 @@ type EditorComponentProps = { fields: FieldStore; setFields: SetStoreFunction<Fi
 
 export type EditorComponent = Component<EditorComponentProps>
 
-export type ParentEditorComponent = Component<{operation: ImageOperations; children: JSX.Element}>
+export type ParentEditorComponent = Component<{operation: ImageOperations; children: JSX.Element, verification?: Accessor<boolean>}>
 
 export interface ErrorStore {
     connectionIssue?: string | false;

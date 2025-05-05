@@ -120,7 +120,7 @@ const ImageEditor: Component = () => {
                             {(image) => {
                                 return (
                                     <>
-                                        <img src={image} class={`object-fill disable-blur w-full contrast-100 ${context.values.loading.imageOperation ? "opacity-50" : ""}`} alt="" />
+                                        <img src={image} class={`object-fill disable-blur ${context.values.loading.imageOperation ? "opacity-50" : ""}`} alt="" />
                                     </>
                                 );
                             }}

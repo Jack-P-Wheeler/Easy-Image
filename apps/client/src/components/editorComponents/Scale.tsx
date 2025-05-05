@@ -1,10 +1,8 @@
-import { useImageEditorContext } from "@helpers/context-helpers";
 import { EditorComponent } from "@helpers/type-helpers";
 import TransformButton from "./TransformButton";
+import { createMemo } from "solid-js";
 
-const Scale: EditorComponent = ({ fields, setFields }) => {    
-    const context = useImageEditorContext()
-    
+const Scale: EditorComponent = ({ fields, setFields }) => {
     return (
         <div>
             <div>
@@ -25,13 +23,9 @@ const Scale: EditorComponent = ({ fields, setFields }) => {
                 />
             </div>
 
-            <TransformButton operation={{ operation: "scale" }}>
+            <TransformButton operation={{ operation: "scale" }} verification={createMemo(() => fields.scale !== undefined)}>
                 Scale
             </TransformButton>
-
-            <button class="join-item btn btn-primary mt-10" disabled={fields.scale == undefined} onClick={() => context.values.imageTransform({ operation: "scale" })}>
-                Scale
-            </button>
         </div>
     );
 };
