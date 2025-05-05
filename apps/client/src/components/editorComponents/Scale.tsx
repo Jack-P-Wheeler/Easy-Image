@@ -1,6 +1,10 @@
+import { useImageEditorContext } from "@helpers/context-helpers";
 import { EditorComponent } from "@helpers/type-helpers";
+import TransformButton from "./TransformButton";
 
-const Scale: EditorComponent = ({ fields, setFields, imageTransform }) => {    
+const Scale: EditorComponent = ({ fields, setFields }) => {    
+    const context = useImageEditorContext()
+    
     return (
         <div>
             <div>
@@ -21,7 +25,11 @@ const Scale: EditorComponent = ({ fields, setFields, imageTransform }) => {
                 />
             </div>
 
-            <button class="join-item btn btn-primary mt-10" disabled={fields.scale == undefined} onClick={() => imageTransform({ opperation: "scale" })}>
+            <TransformButton operation={{ operation: "scale" }}>
+                Scale
+            </TransformButton>
+
+            <button class="join-item btn btn-primary mt-10" disabled={fields.scale == undefined} onClick={() => context.values.imageTransform({ operation: "scale" })}>
                 Scale
             </button>
         </div>

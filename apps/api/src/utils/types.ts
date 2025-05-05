@@ -7,13 +7,13 @@ export interface BasicResponseData {
 
 export type ImageOperations = (
     {
-        opperation: 'scale',
+        operation: 'scale',
     } | {
-        opperation: 'rotate'
+        operation: 'rotate'
         angle?: number
     } | {
-        opperation: 'flip'
+        operation: 'flip'
     } | {
-        opperation: 'flop'
+        operation: 'flop'
     }
 )
