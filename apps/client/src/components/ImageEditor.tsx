@@ -20,8 +20,6 @@ const ImageEditor: Component = () => {
 
     const [imageMeta, setImageMeta] = createSignal<(BasicResponseData & { data: Metadata }) | null>(null);
 
-    
-
     createEffect(() => {
         let key: ErrorKeys;
         for (key in context.values.errors) {
@@ -30,8 +28,6 @@ const ImageEditor: Component = () => {
             }
         }
     });
-
-    
 
     const handleFileInput = async (e: Event) => {
         try {
@@ -56,8 +52,6 @@ const ImageEditor: Component = () => {
         }
     };
 
-    
-
     return (
         <section>
             <Show when={context.values.displayErrors()}>
@@ -75,7 +69,7 @@ const ImageEditor: Component = () => {
             </Show>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-10 min-h-[800px]">
                 <Panel>
-                    <div class="space-y-4">
+                    <div class="space-y-4 border-b-2 pb-4 mb-4">
                         <div>
                             <label for="file" class="font-bold mb-2 block">
                                 File to transform
@@ -92,25 +86,34 @@ const ImageEditor: Component = () => {
                         </div>
                     </div>
 
-                    <Scale fields={context.values.fields} setFields={context.values.setFields} />
+                    <Scale />
 
-                    <div class="join">
-                        <TransformButton operation={{ operation: "rotate", angle: -90 }}>
-                            -90°
-                        </TransformButton>
+                    <div class="flex flex-col">
+                        <div class="join">
+                            <TransformButton operation={{ operation: "rotate", angle: -90 }}>
+                                -90°
+                            </TransformButton>
 
-                        <TransformButton operation={{ operation: "rotate", angle: 90 }}>
-                            90°
-                        </TransformButton>
+                            <TransformButton operation={{ operation: "rotate", angle: 90 }}>
+                                90°
+                            </TransformButton>
 
-                        <TransformButton operation={{ operation: "flip" }}>
-                            Flip
-                        </TransformButton>
+                            <TransformButton operation={{ operation: "flip" }}>
+                                Flip
+                            </TransformButton>
 
-                        <TransformButton operation={{ operation: "flop" }}>
-                            Flop
-                        </TransformButton>
+                            <TransformButton operation={{ operation: "flop" }}>
+                                Flop
+                            </TransformButton>
+                        </div>
+
+                        <div class="join mt-4">
+                            <TransformButton operation={{ operation: "dither" }}>
+                                Dither
+                            </TransformButton>
+                        </div>
                     </div>
+
                 </Panel>
 
                 <Panel classes="col-span-2">
@@ -154,7 +157,6 @@ const ImageEditor: Component = () => {
                     </Show>
                 </Panel>
             </div>
-            
         </section>
     );
 };

@@ -15,5 +15,7 @@ export type ImageOperations = (
         operation: 'flip'
     } | {
         operation: 'flop'
+    } | {
+        operation: 'dither'
     }
 )

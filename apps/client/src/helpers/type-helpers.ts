@@ -28,11 +28,11 @@ declare module "solid-js" {
 
 export type MaybeResolved<T> = T | Promise<T>
 
-type EditorComponentProps = { fields: FieldStore; setFields: SetStoreFunction<FieldStore>;}
+type EditorComponentProps = { }
 
 export type EditorComponent = Component<EditorComponentProps>
 
-export type ParentEditorComponent = Component<{operation: ImageOperations; children: JSX.Element, verification?: Accessor<boolean>}>
+export type ParentEditorComponent = Component<{operation: ImageOperations; children: JSX.Element, verification?: Accessor<boolean>, classes?: string}>
 
 export interface ErrorStore {
     connectionIssue?: string | false;
