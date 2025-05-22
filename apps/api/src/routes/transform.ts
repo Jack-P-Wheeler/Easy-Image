@@ -184,6 +184,7 @@ app.post('/dither', async (c) => {
 
         const buffer = await sharp(imageBuffer)
             .ensureAlpha()
+            .resize({width: 600})
             .raw()
             .toBuffer({ resolveWithObject: true })
             .then(async ({ info, data: dataBuffer }) => {
@@ -196,10 +197,15 @@ app.post('/dither', async (c) => {
                 for (let i = 0; i < data.length; i += channels) {
                     const {color, error} = nearestColor([data[i], data[i + 1], data[i + 2]])
 
-                    for (let j = 0; j < 3; j++) {
-                        data[i + j] = color[j]
+                    for (const channel of error) {
+                        if (channel > 255 || channel < 0) console.log(channel)
+                    }
 
-                        const thisError = clamp(error[j], 255, -255)
+                    for (let j = 0; j < 3; j++) {
+                        if (color[j] > 255 || color[j] < 0 ) console.log(color[j])
+                        data[i + j] = clamp(color[j], 255, 0)
+
+                        const thisError = error[j]
                         
                         if (data[i + channels + j] !== undefined) data[i + channels + j] += thisError * 7/16
                         if (data[i + (width * channels) + channels + j] !== undefined) data[i + (width * channels) + channels + j] += thisError * 1/16

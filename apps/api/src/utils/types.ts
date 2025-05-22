@@ -19,3 +19,5 @@ export type ImageOperations = (
         operation: 'dither'
     }
 )
+
+export type RGBTuple = [number, number, number]
