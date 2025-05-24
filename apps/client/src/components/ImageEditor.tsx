@@ -10,6 +10,7 @@ import ImageMetaData from "./ImageMetaData";
 import Scale from "@components/editorComponents/Scale";
 import TransformButton from "./editorComponents/TransformButton";
 import { useImageEditorContext } from "@helpers/context-helpers";
+import Dither from "./editorComponents/Dither";
 
 
 
@@ -107,10 +108,8 @@ const ImageEditor: Component = () => {
                             </TransformButton>
                         </div>
 
-                        <div class="join mt-4">
-                            <TransformButton operation={{ operation: "dither" }}>
-                                Dither
-                            </TransformButton>
+                        <div class="mt-4">
+                            <Dither/>
                         </div>
                     </div>
 

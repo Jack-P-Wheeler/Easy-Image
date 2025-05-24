@@ -1,4 +1,5 @@
-import { clamp, nearestColor } from "@utils/helpers";
+import { ditheringFloydSteinberg } from "@utils/dithering";
+import { clamp, nearestColor, nearestPaletteColor } from "@utils/helpers";
 import { BasicResponseData } from "@utils/types";
 import { Hono } from "hono";
 import sharp, { Metadata, ResizeOptions } from "sharp";
@@ -175,61 +176,36 @@ app.post('/flop', async (c) => {
 app.post('/dither', async (c) => {
     const body = await c.req.parseBody()
 
-    if (body.file instanceof Blob) {
-        const imageBuffer = await body.file.arrayBuffer()
-
-        let width = 0
-        let height = 0
-        let channels: 1 | 2 | 3 | 4 = 4
-
-        const buffer = await sharp(imageBuffer)
-            .ensureAlpha()
-            .resize({width: 600})
-            .raw()
-            .toBuffer({ resolveWithObject: true })
-            .then(async ({ info, data: dataBuffer }) => {
-                width = info.width
-                height = info.height
-                channels = info.channels
-
-                const data = [...dataBuffer]
-
-                for (let i = 0; i < data.length; i += channels) {
-                    const {color, error} = nearestColor([data[i], data[i + 1], data[i + 2]])
-
-                    for (const channel of error) {
-                        if (channel > 255 || channel < 0) console.log(channel)
-                    }
-
-                    for (let j = 0; j < 3; j++) {
-                        if (color[j] > 255 || color[j] < 0 ) console.log(color[j])
-                        data[i + j] = clamp(color[j], 255, 0)
-
-                        const thisError = error[j]
-                        
-                        if (data[i + channels + j] !== undefined) data[i + channels + j] += thisError * 7/16
-                        if (data[i + (width * channels) + channels + j] !== undefined) data[i + (width * channels) + channels + j] += thisError * 1/16
-                        if (data[i + (width * channels) - channels + j] !== undefined) data[i + (width * channels) - channels + j] += thisError * 3/16
-                        if (data[i + (width * channels) + j] !== undefined) data[i + (width * channels) + j] += thisError * 5/16
-                    }
-                }
-
-                return Buffer.from(data)
-            })
-
-        const transformedImageBuffer = await sharp(buffer, {raw: {width, height, channels}})
-            .toFormat('png')
-            .toBuffer()
-
-        c.header('Content-Type', 'image/png')
-        return c.body(transformedImageBuffer)
+    if (!(body.file instanceof Blob)) {
+        const response: BasicResponseData = {
+            code: 400,
+            message: "incorrect input"
+        }
+        return c.json(response, response.code)
     }
 
-    const response: BasicResponseData = {
-        code: 400,
-        message: "incorrect input"
-    }
-    return c.json(response, response.code)
+    const imageBuffer = await body.file.arrayBuffer()
+
+    if (body.palette == undefined || typeof body.palette != 'string') throw new Error('angle is not defined')
+
+    const palette = JSON.parse(body.palette)
+
+    const buffer = await sharp(imageBuffer)
+        .ensureAlpha()
+        .resize({ width: 600 })
+        .raw()
+        .toBuffer({ resolveWithObject: true })
+
+    const { width, height, channels } = buffer.info
+
+    const ditheredImageBuffer = await ditheringFloydSteinberg(buffer.info, buffer.data, { colorFunction: nearestPaletteColor(palette) })
+
+    const transformedImageBuffer = await sharp(ditheredImageBuffer, { raw: { width, height, channels } })
+        .png({ colors: 16, compressionLevel: 9, palette: true })
+        .toBuffer()
+
+    c.header('Content-Type', 'image/png')
+    return c.body(transformedImageBuffer)
 })
 
 app.post('*', (c) => {

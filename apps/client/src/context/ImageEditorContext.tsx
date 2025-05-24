@@ -22,13 +22,17 @@ const [loading, setLoading] = createStore<LoadingState>({
     imageMeta: false,
 });
 
-const [fields, setFields] = createStore<FieldStore>();
+const [fields, setFields] = createStore<FieldStore>({
+    scale: '1',
+    ditherPalette: [[0,0,0],[255,255,255]],
+});
 
 const getBlobFromUrl = async (url: string) => {
     return await (await fetch(url)).blob();
 };
 
 const imageTransform = async (params: ImageOperations) => {
+    console.log(params)
     try {
         const imageUrlValue = imageUrl();
 
@@ -51,6 +55,9 @@ const imageTransform = async (params: ImageOperations) => {
             case "rotate":
                 formData.append("angle", String(params.angle));
                 break;
+            case "dither":
+                console.log(params.palette)
+                formData.append("palette", JSON.stringify(fields.ditherPalette))
             default:
                 break;
         }

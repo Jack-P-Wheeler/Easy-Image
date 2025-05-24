@@ -1,9 +1,10 @@
 import { Accessor, Component, JSX, createMemo } from "solid-js";
 import { SetStoreFunction } from "solid-js/store";
-import { BasicResponseData, ImageOperations } from "@types";
+import { BasicResponseData, ImageOperations, RGBTuple } from "@types";
 
 export interface FieldStore {
     scale?: string;
+    ditherPalette?: Array<RGBTuple>
 }
 
 export const guarded = <T, U extends T>(data: T, predicate: (input: NonNullable<T>) => U | false) => {
