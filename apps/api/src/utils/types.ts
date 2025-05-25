@@ -23,6 +23,9 @@ export type ImageOperations = (
     } | {
         operation: 'dither',
         palette?: Array<RGBTuple>
+    } | {
+        operation: 'ordered',
+        palette?: Array<RGBTuple>
     }
 )
 

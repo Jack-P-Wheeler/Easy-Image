@@ -1,4 +1,4 @@
-import { ditheringFloydSteinberg } from "@utils/dithering";
+import { ditheringFloydSteinberg, ditheringOrderedBayer } from "@utils/dithering";
 import { clamp, nearestColor, nearestPaletteColor } from "@utils/helpers";
 import { BasicResponseData } from "@utils/types";
 import { Hono } from "hono";
@@ -202,6 +202,41 @@ app.post('/dither', async (c) => {
 
     const transformedImageBuffer = await sharp(ditheredImageBuffer, { raw: { width, height, channels } })
         .png({ colors: 16, compressionLevel: 9, palette: true })
+        .toBuffer()
+
+    c.header('Content-Type', 'image/png')
+    return c.body(transformedImageBuffer)
+})
+
+app.post('/ordered', async (c) => {
+    const body = await c.req.parseBody()
+
+    if (!(body.file instanceof Blob)) {
+        const response: BasicResponseData = {
+            code: 400,
+            message: "incorrect input"
+        }
+        return c.json(response, response.code)
+    }
+
+    const imageBuffer = await body.file.arrayBuffer()
+
+    if (body.palette == undefined || typeof body.palette != 'string') throw new Error('angle is not defined')
+
+    const palette = JSON.parse(body.palette)
+
+    const buffer = await sharp(imageBuffer)
+        .ensureAlpha()
+        .resize({ width: 600 })
+        .raw()
+        .toBuffer({ resolveWithObject: true })
+
+    const { width, height, channels } = buffer.info
+
+    const ditheredImageBuffer = await ditheringOrderedBayer(buffer.info, buffer.data, { colorFunction: nearestPaletteColor(palette) })
+
+    const transformedImageBuffer = await sharp(ditheredImageBuffer, { raw: { width, height, channels } })
+        .png()
         .toBuffer()
 
     c.header('Content-Type', 'image/png')

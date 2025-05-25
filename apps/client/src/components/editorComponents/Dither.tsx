@@ -40,9 +40,15 @@ const Dither: EditorComponent = () => {
                 </For>
             </div>
 
-            <TransformButton classes="mt-4" operation={{ operation: "dither" }} verification={createMemo(() => fields.ditherPalette !== undefined)}>
-                Dither
-            </TransformButton>
+            <div class="join">
+                <TransformButton classes="mt-4" operation={{ operation: "dither" }} verification={createMemo(() => fields.ditherPalette !== undefined)}>
+                    Dither
+                </TransformButton>
+                <TransformButton classes="mt-4" operation={{ operation: "ordered" }} verification={createMemo(() => fields.ditherPalette !== undefined)}>
+                    Ordered
+                </TransformButton>
+            </div>
+
         </div>
     );
 };

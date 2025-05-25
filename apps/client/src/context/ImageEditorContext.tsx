@@ -56,7 +56,8 @@ const imageTransform = async (params: ImageOperations) => {
                 formData.append("angle", String(params.angle));
                 break;
             case "dither":
-                console.log(params.palette)
+                formData.append("palette", JSON.stringify(fields.ditherPalette))
+            case "ordered":
                 formData.append("palette", JSON.stringify(fields.ditherPalette))
             default:
                 break;
