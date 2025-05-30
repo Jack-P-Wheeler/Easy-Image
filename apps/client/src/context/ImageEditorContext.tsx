@@ -1,7 +1,7 @@
 import { ErrorStore, memoGuard, FieldStore } from "@helpers/type-helpers";
-import { BasicResponseData, ImageOperations } from "@types";
+import { BasicResponseData, ImageAnalysis, ImageOperations, RGBTuple } from "@types";
 import { ContextProviderComponent, createContext, createSignal } from "solid-js";
-import { createStore,  } from "solid-js/store";
+import { createStore, } from "solid-js/store";
 
 interface LoadingState {
     imageOperation: boolean;
@@ -22,17 +22,53 @@ const [loading, setLoading] = createStore<LoadingState>({
     imageMeta: false,
 });
 
-const [fields, setFields] = createStore<FieldStore>({
-    scale: '1',
-    ditherPalette: [[0,0,0],[255,255,255]],
-});
+const [fields, setFields] = createStore<FieldStore>();
 
 const getBlobFromUrl = async (url: string) => {
     return await (await fetch(url)).blob();
 };
 
+const imageAnalysis = async (params: ImageAnalysis) => {
+    const imageUrlValue = imageUrl();
+
+    if (typeof imageUrlValue !== "string" || imageUrlValue == "") {
+        return false;
+    }
+
+    setLoading('imageOperation', true)
+
+    const currentImage = await getBlobFromUrl(imageUrlValue);
+    const formData = new FormData();
+
+    formData.append("file", currentImage);
+
+    switch (params.operation) {
+        case "sample-palette":
+            formData.append("sampleSize", String(fields.samplePaletteSize || '4'))
+        default:
+            break;
+    }
+
+    const fetchData = await fetch(import.meta.env.VITE_API_URL + "/api/analysis/" + params.operation, {
+        method: "post",
+        body: formData,
+    });
+
+    const data = await fetchData.json() as BasicResponseData & { data: Array<RGBTuple> }
+
+
+
+    switch (params.operation) {
+        case "sample-palette":
+            setFields('ditherPalette', data.data)
+        default:
+            break;
+    }
+
+    setLoading('imageOperation', false)
+}
+
 const imageTransform = async (params: ImageOperations) => {
-    console.log(params)
     try {
         const imageUrlValue = imageUrl();
 
@@ -59,6 +95,8 @@ const imageTransform = async (params: ImageOperations) => {
                 formData.append("palette", JSON.stringify(fields.ditherPalette))
             case "ordered":
                 formData.append("palette", JSON.stringify(fields.ditherPalette))
+            case "sample-palette":
+                formData.append("sampleSize", String(fields.samplePaletteSize || '4'))
             default:
                 break;
         }
@@ -87,7 +125,7 @@ const imageTransform = async (params: ImageOperations) => {
     }
 };
 
-const [values, setValues] = createStore({ imageUrl, setImageUrl, guardedImage, errors, setErrors, displayErrors, setDisplayErrors, loading, setLoading, fields, setFields, imageTransform });
+const [values, setValues] = createStore({ imageUrl, setImageUrl, guardedImage, errors, setErrors, displayErrors, setDisplayErrors, loading, setLoading, fields, setFields, imageTransform, imageAnalysis });
 
 export const ImageEditorContextObject = createContext<{ values: typeof values, setValues: typeof setValues }>()
 

@@ -26,6 +26,17 @@ export type ImageOperations = (
     } | {
         operation: 'ordered',
         palette?: Array<RGBTuple>
+    }  | {
+        operation: 'sample-palette',
+        sampleSize?: number
+    }
+)
+
+export type ImageAnalysis = (
+    {
+        operation: 'info'
+    } | {
+        operation: 'sample-palette'
     }
 )
 

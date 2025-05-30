@@ -11,6 +11,7 @@ import Scale from "@components/editorComponents/Scale";
 import TransformButton from "./editorComponents/TransformButton";
 import { useImageEditorContext } from "@helpers/context-helpers";
 import Dither from "./editorComponents/Dither";
+import PaletteSampler from "./editorComponents/PaletteSampler";
 
 
 
@@ -39,7 +40,7 @@ const ImageEditor: Component = () => {
                 const formData = new FormData();
                 formData.append("file", e.target.files[0]);
                 context.values.setLoading("imageMeta", true);
-                const metaPromise = await fetch(import.meta.env.VITE_API_URL + "/api/transform/info", {
+                const metaPromise = await fetch(import.meta.env.VITE_API_URL + "/api/analysis/info", {
                     method: "post",
                     body: formData,
                 });
@@ -110,6 +111,10 @@ const ImageEditor: Component = () => {
 
                         <div class="mt-4">
                             <Dither/>
+                        </div>
+
+                        <div class="mt-4">
+                            <PaletteSampler/>
                         </div>
                     </div>
 

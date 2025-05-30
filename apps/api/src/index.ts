@@ -5,6 +5,7 @@ import { bodyLimit } from 'hono/body-limit'
 
 import { BasicResponseData } from '@utils/types'
 import transform from "@routes/transform"
+import analysis from "@routes/analysis"
 import { cors } from 'hono/cors'
 import path from 'node:path'
 import fs from 'node:fs/promises'
@@ -54,6 +55,8 @@ app.use('/api/*', bodyLimit({
 }))
 
 app.route("/api/transform", transform)
+
+app.route("/api/analysis", analysis)
 
 app.use('/*', async (c, next) => {
     const absPath = path.join(import.meta.dirname, '/frontend', c.req.path == '/' ? 'index.html' : c.req.path)

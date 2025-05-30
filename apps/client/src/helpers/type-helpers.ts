@@ -1,10 +1,10 @@
 import { Accessor, Component, JSX, createMemo } from "solid-js";
-import { SetStoreFunction } from "solid-js/store";
-import { BasicResponseData, ImageOperations, RGBTuple } from "@types";
+import { ImageAnalysis, ImageOperations, RGBTuple } from "@types";
 
 export interface FieldStore {
     scale?: string;
     ditherPalette?: Array<RGBTuple>
+    samplePaletteSize?: string;
 }
 
 export const guarded = <T, U extends T>(data: T, predicate: (input: NonNullable<T>) => U | false) => {
@@ -34,6 +34,8 @@ type EditorComponentProps = { }
 export type EditorComponent = Component<EditorComponentProps>
 
 export type ParentEditorComponent = Component<{operation: ImageOperations; children: JSX.Element, verification?: Accessor<boolean>, classes?: string}>
+
+export type ParentAnalysisComponent = Component<{operation: ImageAnalysis; children: JSX.Element, verification?: Accessor<boolean>, classes?: string}>
 
 export interface ErrorStore {
     connectionIssue?: string | false;
