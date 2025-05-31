@@ -1,6 +1,6 @@
 import { EditorComponent } from "@helpers/type-helpers";
 import TransformButton from "./TransformButton";
-import { createEffect, createMemo, For } from "solid-js";
+import { createEffect, createMemo, For, Show } from "solid-js";
 import { useImageEditorContext } from "@helpers/context-helpers";
 import { RGBTuple } from "@types";
 import { rgbToHex, textContrastCheck } from "@helpers/utils";
@@ -22,6 +22,22 @@ const Dither: EditorComponent = () => {
                 <label for="palette" class="font-bold block mb-2">
                     Palette Select
                 </label>
+
+                <Show when={fields.ditherPalette} keyed>
+                    {
+                        (palette) => {
+                            return <div class="border rounded-md p-4 mb-4">
+                                {
+                                    palette.map((color) => {
+                                        const hexColor = rgbToHex(color)
+                                        return <div class="badge font-bold" style={`background-color: #${hexColor}; color: ${textContrastCheck(color) ? 'black' : 'white'}`}>#{hexColor}</div>
+                                    })
+                                }
+                            </div>
+                        }
+                    }
+                </Show>
+
 
                 <For each={palettes}>
                     {(palette) => {
