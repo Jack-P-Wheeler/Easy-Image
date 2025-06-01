@@ -44,6 +44,8 @@ export type RGBTuple = [number, number, number]
 
 export type RawPixelFunction = (info: OutputInfo, data: Buffer<ArrayBufferLike>) => Promise<Buffer>
 
+export type RawPixelAnalysisFunction<T> = (info: OutputInfo, data: Buffer<ArrayBufferLike>) => Promise<T>
+
 export type NearestColorModes = 'default' | 'palette'
 
 export type ColorDistanceFunction = (color: RGBTuple) => { color: RGBTuple, error: RGBTuple }
@@ -51,3 +53,7 @@ export type ColorDistanceFunction = (color: RGBTuple) => { color: RGBTuple, erro
 type DitherOptions = {colorFunction: ColorDistanceFunction}
 
 export type DitherFunction = WithOptions<RawPixelFunction, DitherOptions>
+
+type SampleOptions = {sampleSize: number}
+
+export type SampleFunction = WithOptions<RawPixelAnalysisFunction<Array<RGBTuple>>, SampleOptions>

@@ -108,14 +108,6 @@ const ImageEditor: Component = () => {
                                 Flop
                             </TransformButton>
                         </div>
-
-                        <div class="mt-4">
-                            <Dither/>
-                        </div>
-
-                        <div class="mt-4">
-                            <PaletteSampler/>
-                        </div>
                     </div>
 
                 </Panel>
@@ -159,6 +151,16 @@ const ImageEditor: Component = () => {
                             );
                         }}
                     </Show>
+                </Panel>
+
+                <Panel classes="col-span-2">
+                    <div class="mt-4">
+                            <Dither/>
+                        </div>
+
+                        <div class="mt-4">
+                            <PaletteSampler/>
+                        </div>
                 </Panel>
             </div>
         </section>

@@ -25,7 +25,7 @@ const PaletteSampler: EditorComponent = () => {
                 />
             </div>
 
-            <div class="join">
+            <div class="">
                 <AnalysisButton classes="mt-4" operation={{ operation: "sample-palette" }}>
                     Sample
                 </AnalysisButton>
